@@ -40,7 +40,7 @@ def main(input, output):
     df = df.merge(df_count, how='outer') # merge with full alphabet
     df['count'] = df['count'].fillna(0)
     df['total'] = df['count'].sum()
-    df['frequency'] = df['count']/df['total']
+    df['frequency'] = round(df['count']/df['total'], 10)
     df[['character', 'frequency']].to_csv(output, encoding='utf-8', index=False)    
 
 
