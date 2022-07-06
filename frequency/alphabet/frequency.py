@@ -23,6 +23,32 @@ alphabet_accents = ['à', 'á', 'â', 'ã', 'ç', 'è', 'é', 'ê', 'ì', 'í', 
 alphabet_accents_upper = ['À', 'Á', 'Â', 'Ã', 'Ç', 'È', 'É', 'Ê', 'Ì', 'Í', 'Î', 'Ò', 'Ó', 'Ô', 'Õ', 'Ù', 'Ú', 'Û']
 full_alphabet = list(itertools.chain(alphabet_lower, alphabet_upper, alphabet_symbols, alphabet_numbers, alphabet_accents, alphabet_accents_upper))
 
+"""CharFreq* alphabetFreq = {
+    {
+        character: 'a',
+        frequency: 0,
+    }
+}"""
+
+struct_outer = "CharFreq_T* alphabetFreq = {{ {} }}"
+struct_inner = "{{\"{}\", {}, }}"
+
+
+def write_to_header_file(data, output):
+    #open text file
+    frequency_file = open(output, "w")
+
+    inner = ""
+
+    #write string to file
+    for index, row in data.iterrows():
+        inner = inner + struct_inner.format(row['character'], row['frequency']) + ",\n"
+    
+    frequency_file.write(struct_outer.format(inner))
+    
+
+    #close file
+    frequency_file.close()
 
 
 def main(input, output):
@@ -31,7 +57,7 @@ def main(input, output):
 
     for file in sorted(listdir(input)):
         inf = open(input + file, "r", encoding='latin-1')
-        count = collections.Counter(inf.read()) + count                  
+        count = collections.Counter(inf.read()) + count
         inf.close()
     
     
@@ -40,15 +66,17 @@ def main(input, output):
     df = df.merge(df_count, how='outer') # merge with full alphabet
     df['count'] = df['count'].fillna(0)
     df['total'] = df['count'].sum()
-    df['frequency'] = round(df['count']/df['total'], 10)
-    df[['character', 'frequency']].to_csv(output, encoding='utf-8', index=False)    
+    df['frequency'] = df['count']/df['total']
+    df['frequency'] = df['frequency'].apply(lambda x: '%.10f' % x)
+
+    write_to_header_file(df, output)  
 
 
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="The path to the folder of files to analyze")
-    parser.add_argument("-o", "--output-path", help="The frequency output file", default="../output.csv")
+    parser.add_argument("-o", "--output-path", help="The frequency output file", default="../output.h")
     p_args = parser.parse_args(args)
     return p_args
 
