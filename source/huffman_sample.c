@@ -2,25 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "frequency.h"
+#include "huffman.h"
 
 // This constant can be avoided by explicitly
 // calculating height of Huffman Tree
-#define MAX_TREE_HT 100
-
-// A Huffman tree node
-struct MinHeapNode
-{
-
-    // One of the input characters
-    char data[5];
-
-    // Frequency of the character
-    unsigned freq;
-
-    // Left and right child of this node
-    struct MinHeapNode *left, *right;
-};
 
 // A Min Heap: Collection of
 // min-heap (or Huffman tree) nodes
@@ -273,20 +258,164 @@ void printCodes(struct MinHeapNode *root, int arr[],
     }
 }
 
+CharCode_T *buildCodeTable(struct MinHeapNode *root, int arr[], int top)
+{
+    if (root->left)
+    {
+        arr[top] = 0;
+        buildCodeTable(root->left, arr, top + 1);
+    }
+    if (root->right)
+    {
+        arr[top] = 1;
+        buildCodeTable(root->right, arr, top + 1);
+    }
+    if (isLeaf(root))
+    {
+        int code_length = strlen(root->data);
+        CharCodeTable[currCount].character = malloc(sizeof(char) * code_length);
+        strcpy(CharCodeTable[currCount].character, root->data);
+
+        int index = 0;
+        char *code = (char *)malloc(sizeof(char) * top);
+        for (int i = 0; i < top; i++)
+        {
+            index += sprintf(&code[index], "%d", arr[i]);
+        }
+
+        CharCodeTable[currCount].code = code;
+
+        CharCodeTable[currCount].length = code_length;
+        currCount++;
+    }
+    return CharCodeTable;
+}
+
+char *getCode(char character)
+{
+    for (int i = 0; i < currCount; i++)
+    {
+        if (CharCodeTable[i].character[0] == character)
+        {
+            return CharCodeTable[i].code;
+        }
+    }
+    return NULL;
+}
+
+char *long_to_binary(unsigned long long k)
+
+{
+    static char c[65];
+    c[0] = '\0';
+
+    unsigned long long val;
+    for (val = 1UL << (sizeof(unsigned long long) * 8 - 1); val > 0; val >>= 1)
+    {
+        strcat(c, ((k & val) == val) ? "1" : "0");
+    }
+    return c;
+}
+
+unsigned long long int encode(char *rawString)
+{
+    unsigned long long int encodedString = 0;
+    for (int i = 0; i < strlen(rawString); i++)
+    {
+        char *code = getCode(rawString[i]);
+        printf("Got code for %c: %s\n", rawString[i], code);
+        if (code == NULL)
+        {
+            printf("Character %c not found in the code table\n", rawString[i]);
+            return 0;
+        }
+        for (int j = 0; j < strlen(code); j++)
+        {
+            encodedString <<= 1;
+            encodedString |= code[j] - '0';
+        }
+    }
+    return encodedString;
+}
+
+char *decode(char *binaryString, struct MinHeapNode *root)
+{
+    // char *codedString = long_to_binary(binaryString);
+
+    struct MinHeapNode *temp = root;
+    for (int i = 0; i < strlen(binaryString); i++)
+    {
+        // printf("Reading %c\n", binaryString[i]);
+        // printf("Current root: %s\n", temp->data);
+        // printf("Left child: %s\n", temp->left->data);
+        // printf("Right child: %s\n", temp->right->data);
+
+        if (binaryString[i] == '0')
+        {
+            // printf("Going left\n");
+            temp = temp->left;
+        }
+        if (binaryString[i] == '1')
+        {
+            // printf("Going right\n");
+            temp = temp->right;
+        }
+        if (isLeaf(temp))
+        {
+            printf("Found leaf node %s\n", temp->data);
+            temp = root;
+            // printf("%c is %s\n", binaryString[i], temp->data);
+        }
+    }
+    return binaryString;
+}
+
+char *decodeRecursive(unsigned long long int binaryString, char *decodedString)
+{
+    if (binaryString == 0)
+    {
+        return decodedString;
+    }
+    for (int i = 0; i < currCount; i++)
+    {
+        if (binaryString & 1)
+        {
+            strcat(decodedString, CharCodeTable[i].character);
+        }
+        binaryString >>= 1;
+    }
+    return decodeRecursive(binaryString, decodedString);
+}
+
 // The main function that builds a
 // Huffman Tree and print codes by traversing
 // the built Huffman Tree
 void HuffmanCodes()
 
 {
+    int arr[MAX_TREE_HT],
+        top = 0;
     // Construct Huffman Tree
     struct MinHeapNode *root = buildHuffmanTree();
+    printf("\n Huffman Tree Created\n");
 
-    // Print Huffman codes using
-    // the Huffman tree built above
-    int arr[MAX_TREE_HT], top = 0;
+    buildCodeTable(root, arr, 0);
 
-    printCodes(root, arr, top);
+    printf("Generated %d codes\n", currCount);
+
+    // for (int i = 0; i < currCount; i++)
+    // {
+    //     printf("%s: %s\n", CharCodeTable[i].character, CharCodeTable[i].code);
+    // }
+
+    printf("Hello World : %s\n", long_to_binary(encode("Hello World")));
+
+    // unsigned long long int testString = 0b0111001110000011011111011111001111010101010111100011011011110110;
+    decode("0111001110000011011111011111001111010101010111100011011011110110", root);
+    //  Print Huffman codes using
+    //  the Huffman tree built above
+
+    // printCodes(root, arr, top);
 }
 
 // Driver code
