@@ -170,10 +170,10 @@ int isLeaf(struct MinHeapNode *root)
 struct MinHeap *createAndBuildMinHeap()
 
 {
-
+    int i;
     struct MinHeap *minHeap = createMinHeap(ALPHABET_SIZE);
 
-    for (int i = 0; i < ALPHABET_SIZE; ++i)
+    for (i = 0; i < ALPHABET_SIZE; ++i)
         minHeap->array[i] = newNode(alphabetFreq[i].character, alphabetFreq[i].frequency);
 
     minHeap->size = ALPHABET_SIZE;
@@ -332,7 +332,8 @@ unsigned long long int encode(char *rawString)
             printf("Character %c not found in the code table\n", rawString[i]);
             return 0;
         }
-        for (int j = 0; j < strlen(code); j++)
+        int j;
+        for (j = 0; j < strlen(code); j++)
         {
             encodedString <<= 1;
             encodedString |= code[j] - '0';
