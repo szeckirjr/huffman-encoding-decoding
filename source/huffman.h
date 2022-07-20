@@ -1,30 +1,38 @@
 #include "frequency.h"
-#define MAX_TREE_HT 100
+#define MAX_TREE_SIZE 128
 
 typedef struct CharCode
 {
     char *character;
-    char *code;
+    unsigned code;
     int length;
 } CharCode_T;
 
 // A Huffman tree node
-struct MinHeapNode
+struct MinHuffmanNode
 {
-
     // One of the input characters
     char data[5];
-
     // Frequency of the character
     unsigned freq;
-
     // Left and right child of this node
-    struct MinHeapNode *left, *right;
+    struct MinHuffmanNode *left, *right;
 };
 
-unsigned long long int encode(char *rawString);
+// Collection of huffman nodes
+struct MinHuffman
+{
+    // Current size of min heap huffman tree
+    unsigned int size;
+    // Capacity of min heap huffman tree
+    unsigned int capacity;
+    // Array of node pointers
+    struct MinHuffmanNode **array;
+};
 
-char *decode(char *binaryString, struct MinHeapNode *root);
+struct EncodeResult *encode(char *rawString);
+
+// char *decode(char *binaryString, struct MinHeapNode *root);
 
 // Hold global variables for CharFreq table nad CharCode table
 CharFreq_T CharFreqTable[ALPHABET_SIZE];
