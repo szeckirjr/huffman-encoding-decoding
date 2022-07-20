@@ -170,10 +170,10 @@ int isLeaf(struct MinHeapNode *root)
 struct MinHeap *createAndBuildMinHeap()
 
 {
-
+    int i;
     struct MinHeap *minHeap = createMinHeap(ALPHABET_SIZE);
 
-    for (int i = 0; i < ALPHABET_SIZE; ++i)
+    for (i = 0; i < ALPHABET_SIZE; ++i)
         minHeap->array[i] = newNode(alphabetFreq[i].character, alphabetFreq[i].frequency);
 
     minHeap->size = ALPHABET_SIZE;
@@ -277,8 +277,9 @@ CharCode_T *buildCodeTable(struct MinHeapNode *root, int arr[], int top)
         strcpy(CharCodeTable[currCount].character, root->data);
 
         int index = 0;
+        int i;
         char *code = (char *)malloc(sizeof(char) * top);
-        for (int i = 0; i < top; i++)
+        for (i = 0; i < top; i++)
         {
             index += sprintf(&code[index], "%d", arr[i]);
         }
@@ -293,7 +294,8 @@ CharCode_T *buildCodeTable(struct MinHeapNode *root, int arr[], int top)
 
 char *getCode(char character)
 {
-    for (int i = 0; i < currCount; i++)
+    int i;
+    for (i = 0; i < currCount; i++)
     {
         if (CharCodeTable[i].character[0] == character)
         {
@@ -310,7 +312,7 @@ char *long_to_binary(unsigned long long k)
     c[0] = '\0';
 
     unsigned long long val;
-    for (val = 1UL << (sizeof(unsigned long long) * 8 - 1); val > 0; val >>= 1)
+    for (val = 1ULL << (sizeof(unsigned long long) * 8 - 1); val > 0; val >>= 1)
     {
         strcat(c, ((k & val) == val) ? "1" : "0");
     }
@@ -319,8 +321,9 @@ char *long_to_binary(unsigned long long k)
 
 unsigned long long int encode(char *rawString)
 {
+    int i;
     unsigned long long int encodedString = 0;
-    for (int i = 0; i < strlen(rawString); i++)
+    for (i = 0; i < strlen(rawString); i++)
     {
         char *code = getCode(rawString[i]);
         printf("Got code for %c: %s\n", rawString[i], code);
@@ -329,7 +332,8 @@ unsigned long long int encode(char *rawString)
             printf("Character %c not found in the code table\n", rawString[i]);
             return 0;
         }
-        for (int j = 0; j < strlen(code); j++)
+        int j;
+        for (j = 0; j < strlen(code); j++)
         {
             encodedString <<= 1;
             encodedString |= code[j] - '0';
@@ -342,8 +346,9 @@ char *decode(char *binaryString, struct MinHeapNode *root)
 {
     // char *codedString = long_to_binary(binaryString);
 
+    int i;
     struct MinHeapNode *temp = root;
-    for (int i = 0; i < strlen(binaryString); i++)
+    for (i = 0; i < strlen(binaryString); i++)
     {
         // printf("Reading %c\n", binaryString[i]);
         // printf("Current root: %s\n", temp->data);
@@ -376,7 +381,8 @@ char *decodeRecursive(unsigned long long int binaryString, char *decodedString)
     {
         return decodedString;
     }
-    for (int i = 0; i < currCount; i++)
+    int i;
+    for (i = 0; i < currCount; i++)
     {
         if (binaryString & 1)
         {
@@ -403,7 +409,8 @@ void HuffmanCodes()
 
     printf("Generated %d codes\n", currCount);
 
-    // for (int i = 0; i < currCount; i++)
+    // int i;
+    // for (i = 0; i < currCount; i++)
     // {
     //     printf("%s: %s\n", CharCodeTable[i].character, CharCodeTable[i].code);
     // }
@@ -411,7 +418,7 @@ void HuffmanCodes()
     printf("Hello World : %s\n", long_to_binary(encode("Hello World")));
 
     // unsigned long long int testString = 0b0111001110000011011111011111001111010101010111100011011011110110;
-    decode("0111001110000011011111011111001111010101010111100011011011110110", root);
+    decode("0111001110000011011111011111001111010101010111100011011011110110011100111000001101111101111100111101010101011110001101101111011001110011100000110111110111110011110101010101111000110110111101100111001110000011011111011111001111010101010111100011011011110110", root);
     //  Print Huffman codes using
     //  the Huffman tree built above
 
