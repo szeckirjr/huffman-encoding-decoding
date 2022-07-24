@@ -4,7 +4,7 @@
 typedef struct CharCode
 {
     char *character;
-    unsigned long int code;
+    char *code;
     int length;
 } CharCode_T;
 
@@ -30,7 +30,7 @@ struct MinHuffman
     struct MinHuffmanNode **array;
 };
 
-struct EncodeResult *encode(char *rawString);
+unsigned long int encode(char *rawString);
 
 // char *decode(char *binaryString, struct MinHeapNode *root);
 

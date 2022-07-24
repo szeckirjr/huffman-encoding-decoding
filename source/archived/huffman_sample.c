@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "huffman.h"
+#include "huffman_sample.h"
 
 // This constant can be avoided by explicitly
 // calculating height of Huffman Tree
@@ -19,16 +19,16 @@ struct MinHeap
     unsigned capacity;
 
     // Array of minheap node pointers
-    struct MinHeapNode **array;
+    struct MinHuffmanNode **array;
 };
 
 // A utility function allocate a new
 // min heap node with given character
 // and frequency of the character
-struct MinHeapNode *newNode(char *data, int freq)
+struct MinHuffmanNode *newNode(char *data, int freq)
 {
-    struct MinHeapNode *temp = (struct MinHeapNode *)malloc(
-        sizeof(struct MinHeapNode));
+    struct MinHuffmanNode *temp = (struct MinHuffmanNode *)malloc(
+        sizeof(struct MinHuffmanNode));
 
     temp->left = temp->right = NULL;
     strcpy(temp->data, data);
@@ -50,19 +50,19 @@ struct MinHeap *createMinHeap(unsigned capacity)
 
     minHeap->capacity = capacity;
 
-    minHeap->array = (struct MinHeapNode **)malloc(
-        minHeap->capacity * sizeof(struct MinHeapNode *));
+    minHeap->array = (struct MinHuffmanNode **)malloc(
+        minHeap->capacity * sizeof(struct MinHuffmanNode *));
     return minHeap;
 }
 
 // A utility function to
 // swap two min heap nodes
-void swapMinHeapNode(struct MinHeapNode **a,
-                     struct MinHeapNode **b)
+void swapMinHuffmanNode(struct MinHuffmanNode **a,
+                        struct MinHuffmanNode **b)
 
 {
 
-    struct MinHeapNode *t = *a;
+    struct MinHuffmanNode *t = *a;
     *a = *b;
     *b = t;
 }
@@ -84,8 +84,8 @@ void minHeapify(struct MinHeap *minHeap, int idx)
 
     if (smallest != idx)
     {
-        swapMinHeapNode(&minHeap->array[smallest],
-                        &minHeap->array[idx]);
+        swapMinHuffmanNode(&minHeap->array[smallest],
+                           &minHeap->array[idx]);
         minHeapify(minHeap, smallest);
     }
 }
@@ -100,11 +100,11 @@ int isSizeOne(struct MinHeap *minHeap)
 
 // A standard function to extract
 // minimum value node from heap
-struct MinHeapNode *extractMin(struct MinHeap *minHeap)
+struct MinHuffmanNode *extractMin(struct MinHeap *minHeap)
 
 {
 
-    struct MinHeapNode *temp = minHeap->array[0];
+    struct MinHuffmanNode *temp = minHeap->array[0];
     minHeap->array[0] = minHeap->array[minHeap->size - 1];
 
     --minHeap->size;
@@ -116,7 +116,7 @@ struct MinHeapNode *extractMin(struct MinHeap *minHeap)
 // A utility function to insert
 // a new node to Min Heap
 void insertMinHeap(struct MinHeap *minHeap,
-                   struct MinHeapNode *minHeapNode)
+                   struct MinHuffmanNode *minHeapNode)
 
 {
 
@@ -156,7 +156,7 @@ void printArr(int arr[], int n)
 }
 
 // Utility function to check if this node is leaf
-int isLeaf(struct MinHeapNode *root)
+int isLeaf(struct MinHuffmanNode *root)
 
 {
 
@@ -183,10 +183,10 @@ struct MinHeap *createAndBuildMinHeap()
 }
 
 // The main function that builds Huffman tree
-struct MinHeapNode *buildHuffmanTree()
+struct MinHuffmanNode *buildHuffmanTree()
 
 {
-    struct MinHeapNode *left, *right, *top;
+    struct MinHuffmanNode *left, *right, *top;
 
     // Step 1: Create a min heap of capacity
     // equal to size. Initially, there are
@@ -225,7 +225,7 @@ struct MinHeapNode *buildHuffmanTree()
 
 // Prints huffman codes from the root of Huffman Tree.
 // It uses arr[] to store codes
-void printCodes(struct MinHeapNode *root, int arr[],
+void printCodes(struct MinHuffmanNode *root, int arr[],
                 int top)
 
 {
@@ -258,7 +258,7 @@ void printCodes(struct MinHeapNode *root, int arr[],
     }
 }
 
-CharCode_T *buildCodeTable(struct MinHeapNode *root, int arr[], int top)
+CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int top)
 {
     if (root->left)
     {
@@ -319,14 +319,14 @@ char *long_to_binary(unsigned long long k)
     return c;
 }
 
-unsigned long long int encode(char *rawString)
+unsigned long int encode(char *rawString)
 {
     int i;
     unsigned long long int encodedString = 0;
     for (i = 0; i < strlen(rawString); i++)
     {
         char *code = getCode(rawString[i]);
-        printf("Got code for %c: %s\n", rawString[i], code);
+        // printf("Got code for %c: %s\n", rawString[i], code);
         if (code == NULL)
         {
             printf("Character %c not found in the code table\n", rawString[i]);
@@ -342,12 +342,12 @@ unsigned long long int encode(char *rawString)
     return encodedString;
 }
 
-char *decode(char *binaryString, struct MinHeapNode *root)
+char *decode(char *binaryString, struct MinHuffmanNode *root)
 {
     // char *codedString = long_to_binary(binaryString);
 
     int i;
-    struct MinHeapNode *temp = root;
+    struct MinHuffmanNode *temp = root;
     for (i = 0; i < strlen(binaryString); i++)
     {
         // printf("Reading %c\n", binaryString[i]);
@@ -399,10 +399,10 @@ char *decodeRecursive(unsigned long long int binaryString, char *decodedString)
 void HuffmanCodes()
 
 {
-    int arr[MAX_TREE_HT],
+    int arr[MAX_TREE_SIZE],
         top = 0;
     // Construct Huffman Tree
-    struct MinHeapNode *root = buildHuffmanTree();
+    struct MinHuffmanNode *root = buildHuffmanTree();
     printf("\n Huffman Tree Created\n");
 
     buildCodeTable(root, arr, 0);
@@ -415,10 +415,10 @@ void HuffmanCodes()
     //     printf("%s: %s\n", CharCodeTable[i].character, CharCodeTable[i].code);
     // }
 
-    printf("Hello World : %s\n", long_to_binary(encode("Hello World")));
+    // printf("Hello World : %s\n", long_to_binary(encode("Hello World")));
 
     // unsigned long long int testString = 0b0111001110000011011111011111001111010101010111100011011011110110;
-    decode("0111001110000011011111011111001111010101010111100011011011110110011100111000001101111101111100111101010101011110001101101111011001110011100000110111110111110011110101010101111000110110111101100111001110000011011111011111001111010101010111100011011011110110", root);
+    decode(long_to_binary(encode("Eduardo Szeckir is the best")), root);
     //  Print Huffman codes using
     //  the Huffman tree built above
 

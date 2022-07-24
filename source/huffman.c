@@ -3,15 +3,45 @@
 #include <stdlib.h>
 #include <string.h>
 #include "huffman.h"
+#include <math.h>
+
+#define PARENT(i) ((i - 1) / 2)
 
 void printBinary(unsigned long int code, int codeLength)
 {
-    int digit;
-    for (digit = codeLength - 1; digit >= 0; digit--)
+    // int digit;
+    // for (digit = codeLength - 1; digit >= 0; digit--)
+    // {
+    //     printf("%c", code & (1 << digit) ? '1' : '0');
+    // }
+    // printf(" - Code length: %d", codeLength);
+    unsigned i;
+    for (i = 1 << (codeLength - 1); i > 0; i = i / 2)
+        (code & i) ? printf("1") : printf("0");
+    printf(" - length: %d\n", codeLength);
+}
+
+char *intToStringBinary(unsigned long int code, int codeLength)
+{
+    unsigned i;
+    char *str = (char *)malloc(sizeof(char) * codeLength);
+    for (i = 1 << (codeLength - 1); i > 0; i = i / 2)
+        (code & i) ? strcat(str, "1") : strcat(str, "0");
+    return str;
+}
+
+void printHuffmanTree(struct MinHuffmanNode *node, int level)
+{
+    if (node == NULL)
     {
-        printf("%c", code & (1 << digit) ? '1' : '0');
+        return;
     }
-    printf(" - Code length: %d\n", codeLength);
+    printHuffmanTree(node->left, level + 1);
+    if (node->left == NULL && node->right == NULL)
+    {
+        printf("%*c%s\n", level * 4, ' ', node->data);
+    }
+    printHuffmanTree(node->right, level + 1);
 }
 
 struct MinHuffmanNode *newHuffmanNode(char *data, int freq)
@@ -116,12 +146,13 @@ struct MinHuffmanNode *buildHuffmanTree()
 {
     struct MinHuffmanNode *left, *right, *top;
     struct MinHuffman *minHuffman = createAndBuildMinHuffman();
+    // treeprintarray(minHuffman->array, 140);
     while (minHuffman->size != 1)
     {
         left = extractMin(minHuffman);
         right = extractMin(minHuffman);
 
-        top = newHuffmanNode("$", left->freq + right->freq);
+        top = newHuffmanNode("TEMP", left->freq + right->freq);
         top->left = left;
         top->right = right;
 
@@ -131,18 +162,22 @@ struct MinHuffmanNode *buildHuffmanTree()
     return extractMin(minHuffman);
 };
 
-CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int top)
+CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int binaryCode, int top)
 {
-    if (root->left)
-    {
-        arr[top] = 0;
-        buildCodeTable(root->left, arr, top + 1);
-    }
     if (root->right)
     {
+        binaryCode = binaryCode | 1;
+        binaryCode <<= 1;
         arr[top] = 1;
-        buildCodeTable(root->right, arr, top + 1);
+        buildCodeTable(root->right, arr, binaryCode, top + 1);
     }
+    if (root->left)
+    {
+        binaryCode = binaryCode << 1;
+        arr[top] = 0;
+        buildCodeTable(root->left, arr, binaryCode, top + 1);
+    }
+
     if (!(root->left) && !(root->right))
     {
         int charLength = strlen(root->data);
@@ -157,16 +192,20 @@ CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int top)
         // char *code = (char *)malloc(sizeof(char) * top);
         for (int i = 0; i < top; i++)
         {
+            // printBinary(code, top);
             code = code | arr[i];
-            code = code << 1;
+            if (i < top - 1)
+            {
+                code = code << 1;
+            }
+            // code = code << 1;
             codeLength++;
 
             // index += sprintf(&code[index], "%d", arr[i]);
         }
 
-        printf("Assigning code %lu to character %s\n", code, root->data);
+        // printf("Assigning code %lu to character %s with length %d\n", code, root->data, top);
 
-        CharCodeTable[currCount].code = 0;
         CharCodeTable[currCount].code = code;
         CharCodeTable[currCount].length = codeLength;
         currCount++;
@@ -209,6 +248,10 @@ struct EncodeResult *encode(char *rawString)
 {
     unsigned long int encodedString = 0;
     int totalCodeLength = 0;
+    FILE *file = fopen("encodedString.txt", "w");
+    fprintf(file, "");
+    fclose(file);
+    FILE *encodedFile = fopen("encodedString.txt", "a");
     for (int i = 0; i < strlen(rawString); i++)
     {
         unsigned long int code = getCode(rawString[i]);
@@ -226,10 +269,12 @@ struct EncodeResult *encode(char *rawString)
         totalCodeLength += codeLength;
 
         encodedString = encodedString << codeLength;
-        printBinary(encodedString, totalCodeLength);
+        // printBinary(encodedString, totalCodeLength);
+
+        fprintf(encodedFile, "%s", intToStringBinary((code & ((1 << codeLength) - 1)), codeLength));
 
         encodedString = (encodedString) | (code & ((1 << codeLength) - 1));
-        printBinary(encodedString, totalCodeLength);
+        // printBinary(encodedString, totalCodeLength);
 
         // for (int j = 0; j < codeLength; j++)
         // {
@@ -244,51 +289,73 @@ struct EncodeResult *encode(char *rawString)
     result->codeLength = totalCodeLength;
     result->rawString = (char *)malloc(sizeof(char) * strlen(rawString));
     strcpy(result->rawString, rawString);
+    fclose(encodedFile);
 
     return result;
+}
+
+char *decodeFile(char *filename, int codeLength, struct MinHuffmanNode *root)
+{
+    FILE *file = fopen(filename, "r");
+    FILE *destFile = fopen("decodedString.txt", "w");
+    fprintf(destFile, "");
+    fclose(destFile);
+    FILE *decodedFile = fopen("decodedString.txt", "a");
+    char c = fgetc(file);
+    struct MinHuffmanNode *current = root;
+    while (c != EOF)
+    {
+        // printf("%c", c);
+        if (c == '1')
+        {
+            current = current->right;
+        }
+        if (c == '0')
+        {
+            current = current->left;
+        }
+        if (!(current->left) && !(current->right))
+        {
+            printf("%s", current->data);
+            fprintf(decodedFile, "%s", current->data);
+            current = root;
+        }
+        c = fgetc(file);
+    }
+    fclose(file);
+    return "Hey";
 }
 
 char *decode(unsigned long int encodedString, int encodedLength, struct MinHuffmanNode *root)
 {
     printf("Decoding string %lu\n", encodedString);
     struct MinHuffmanNode *current = root;
-    for (int i = 1; i < encodedLength + 1; i++)
+    for (int i = 1; i < encodedLength + 2; i++)
     {
 
         if (!(current->left) && !(current->right))
         {
+            // 1111100110 R
+            //
             printf("Found leafe node %s\n", current->data);
             current = root;
         }
 
         int bit = (encodedString & (((1 << 1) - 1) << (encodedLength - i))) >> (encodedLength - i);
-        printf("Bit %d: %d\n", i, bit);
+        // printf("Bit %d: %d\n", i, bit);
         if (bit == 1)
         {
-            printf("Moving right!\n");
+            // printf("Moving right!\n");
             current = current->right;
         }
         if (bit == 0)
         {
-            printf("Moving left!\n");
+            // printf("Moving left!\n");
             current = current->left;
         }
     }
 
     return "Hi";
-}
-
-void pre_order_traversal(struct MinHuffmanNode *root)
-{
-    if (root != NULL)
-    {
-        if (strcmp(root->data, "$") != 0)
-        {
-            printf("%s ", root->data);
-        }
-        pre_order_traversal(root->left);
-        pre_order_traversal(root->right);
-    }
 }
 
 void HuffmanCodes()
@@ -298,28 +365,35 @@ void HuffmanCodes()
     // Create Huffman Tree
     struct MinHuffmanNode *root = buildHuffmanTree();
 
+    // printHuffmanTree(root, 0);
+    // treeprint(root, NULL, 't', 0);
+
     printf("Huffman Tree Created\n");
 
-    buildCodeTable(root, huffmanTree, 0);
+    buildCodeTable(root, huffmanTree, 0, 0);
 
     printf("Generated %d codes\n", currCount);
 
-    for (int i = 0; i < currCount; i++)
-    {
-        printf("%s: %d = ", CharCodeTable[i].character, CharCodeTable[i].code);
-        printBinary(CharCodeTable[i].code, CharCodeTable[i].length);
-        printf("\n");
-    }
+    // Loop to print all codes
+    // for (int i = 0; i < currCount; i++)
+    // {
+    //     printf("%s: %lu = ", CharCodeTable[i].character, CharCodeTable[i].code);
+    //     printBinary(CharCodeTable[i].code, CharCodeTable[i].length);
+    // }
 
-    char *stringToConvert = "Reb"; // 010011100 10010 01110
+    char *stringToConvert = "THIS IS INSANEEEE"; // 1111100110 000 1110000
+
+    // 111001010 1000 01000 010
 
     struct EncodeResult *result = encode(stringToConvert);
 
     // printf("%s: ", stringToConvert);
     // printBinary(result->encodedString, result->codeLength);
 
-    char *decodedString = decode(result->encodedString, result->codeLength, root);
-    printf("Decoded: %s\n", decodedString);
+    // char *decodedString = decode(result->encodedString, result->codeLength, root);
+    // char *decodedString = decode(010101111011100101100, 21, root);
+    // printf("Decoded: %s\n", decodedString);
+    printf("Decoded to %s\n", decodeFile("encodedString.txt", result->codeLength, root));
 }
 
 int main()
