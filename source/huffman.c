@@ -4,22 +4,9 @@
 #include <string.h>
 #include "huffman.h"
 #include <math.h>
+#include <unistd.h>
 
 #define PARENT(i) ((i - 1) / 2)
-
-void printBinary(unsigned long int code, int codeLength)
-{
-    // int digit;
-    // for (digit = codeLength - 1; digit >= 0; digit--)
-    // {
-    //     printf("%c", code & (1 << digit) ? '1' : '0');
-    // }
-    // printf(" - Code length: %d", codeLength);
-    unsigned i;
-    for (i = 1 << (codeLength - 1); i > 0; i = i / 2)
-        (code & i) ? printf("1") : printf("0");
-    printf(" - length: %d\n", codeLength);
-}
 
 char *intToStringBinary(unsigned long int code, int codeLength)
 {
@@ -28,20 +15,6 @@ char *intToStringBinary(unsigned long int code, int codeLength)
     for (i = 1 << (codeLength - 1); i > 0; i = i / 2)
         (code & i) ? strcat(str, "1") : strcat(str, "0");
     return str;
-}
-
-void printHuffmanTree(struct MinHuffmanNode *node, int level)
-{
-    if (node == NULL)
-    {
-        return;
-    }
-    printHuffmanTree(node->left, level + 1);
-    if (node->left == NULL && node->right == NULL)
-    {
-        printf("%*c%s\n", level * 4, ' ', node->data);
-    }
-    printHuffmanTree(node->right, level + 1);
 }
 
 struct MinHuffmanNode *newHuffmanNode(char *data, int freq)
@@ -146,7 +119,7 @@ struct MinHuffmanNode *buildHuffmanTree()
 {
     struct MinHuffmanNode *left, *right, *top;
     struct MinHuffman *minHuffman = createAndBuildMinHuffman();
-    // treeprintarray(minHuffman->array, 140);
+
     while (minHuffman->size != 1)
     {
         left = extractMin(minHuffman);
@@ -184,27 +157,17 @@ CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int binaryCod
         CharCodeTable[currCount].character = malloc(sizeof(char) * charLength);
         strcpy(CharCodeTable[currCount].character, root->data);
 
-        // 01110011100 000 110110 110110 0110
-
-        // int index = 0;
         unsigned long int code = 0;
         int codeLength = 0;
-        // char *code = (char *)malloc(sizeof(char) * top);
         for (int i = 0; i < top; i++)
         {
-            // printBinary(code, top);
             code = code | arr[i];
             if (i < top - 1)
             {
                 code = code << 1;
             }
-            // code = code << 1;
             codeLength++;
-
-            // index += sprintf(&code[index], "%d", arr[i]);
         }
-
-        // printf("Assigning code %lu to character %s with length %d\n", code, root->data, top);
 
         CharCodeTable[currCount].code = code;
         CharCodeTable[currCount].length = codeLength;
@@ -244,68 +207,59 @@ struct EncodeResult
     char *rawString;
 };
 
-struct EncodeResult *encode(char *rawString)
+struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
 {
+
+    FILE *file = fopen(inputFilename, "r");
+    FILE *destFile = fopen(outputFilename, "w");
+    fprintf(destFile, "");
+    fclose(destFile);
+    FILE *encodedFile = fopen(outputFilename, "a");
+    char c = fgetc(file);
     unsigned long int encodedString = 0;
     int totalCodeLength = 0;
-    FILE *file = fopen("encodedString.txt", "w");
-    fprintf(file, "");
-    fclose(file);
-    FILE *encodedFile = fopen("encodedString.txt", "a");
-    for (int i = 0; i < strlen(rawString); i++)
+    while (c != EOF)
     {
-        unsigned long int code = getCode(rawString[i]);
-        int codeLength = getCodeLength(rawString[i]);
+        unsigned long int code = getCode(c);
+        int codeLength = getCodeLength(c);
 
         if (code == -1)
         {
-            printf("Character %c not found in code table\n", rawString[i]);
-            return 0;
+            printf("Character %c not found in code table, so it was ignored\n", c);
         }
+        else
+        {
 
-        printf("Got code for character %c: ", rawString[i]);
-        printBinary(code, codeLength);
+            totalCodeLength += codeLength;
 
-        totalCodeLength += codeLength;
+            encodedString = encodedString << codeLength;
 
-        encodedString = encodedString << codeLength;
-        // printBinary(encodedString, totalCodeLength);
+            fprintf(encodedFile, "%s", intToStringBinary((code & ((1 << codeLength) - 1)), codeLength));
 
-        fprintf(encodedFile, "%s", intToStringBinary((code & ((1 << codeLength) - 1)), codeLength));
-
-        encodedString = (encodedString) | (code & ((1 << codeLength) - 1));
-        // printBinary(encodedString, totalCodeLength);
-
-        // for (int j = 0; j < codeLength; j++)
-        // {
-        //     encodedString = encodedString << 1;
-        //     encodedString = encodedString | (code & 1);
-        //     code = code >> 1;
-        // }
+            encodedString = (encodedString) | (code & ((1 << codeLength) - 1));
+        }
+        c = fgetc(file);
     }
-    printf("Encoded string %s to %lu\n", rawString, encodedString);
+
     struct EncodeResult *result = (struct EncodeResult *)malloc(sizeof(struct EncodeResult));
     result->encodedString = encodedString;
     result->codeLength = totalCodeLength;
-    result->rawString = (char *)malloc(sizeof(char) * strlen(rawString));
-    strcpy(result->rawString, rawString);
     fclose(encodedFile);
 
     return result;
 }
 
-char *decodeFile(char *filename, int codeLength, struct MinHuffmanNode *root)
+void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode *root)
 {
-    FILE *file = fopen(filename, "r");
-    FILE *destFile = fopen("decodedString.txt", "w");
+    FILE *file = fopen(inputFilename, "r");
+    FILE *destFile = fopen(outputFilename, "w");
     fprintf(destFile, "");
     fclose(destFile);
-    FILE *decodedFile = fopen("decodedString.txt", "a");
+    FILE *decodedFile = fopen(outputFilename, "a");
     char c = fgetc(file);
     struct MinHuffmanNode *current = root;
     while (c != EOF)
     {
-        // printf("%c", c);
         if (c == '1')
         {
             current = current->right;
@@ -320,53 +274,29 @@ char *decodeFile(char *filename, int codeLength, struct MinHuffmanNode *root)
             fprintf(decodedFile, "%s", current->data);
             current = root;
         }
+        if (c != '1' && c != '0')
+        {
+            printf("%c is not an accepted format for decoding, so it was ignored\n", c);
+        }
         c = fgetc(file);
     }
     fclose(file);
-    return "Hey";
 }
 
-char *decode(unsigned long int encodedString, int encodedLength, struct MinHuffmanNode *root)
+enum mode
 {
-    printf("Decoding string %lu\n", encodedString);
-    struct MinHuffmanNode *current = root;
-    for (int i = 1; i < encodedLength + 2; i++)
-    {
+    ENCODE,
+    DECODE
+};
 
-        if (!(current->left) && !(current->right))
-        {
-            // 1111100110 R
-            //
-            printf("Found leafe node %s\n", current->data);
-            current = root;
-        }
-
-        int bit = (encodedString & (((1 << 1) - 1) << (encodedLength - i))) >> (encodedLength - i);
-        // printf("Bit %d: %d\n", i, bit);
-        if (bit == 1)
-        {
-            // printf("Moving right!\n");
-            current = current->right;
-        }
-        if (bit == 0)
-        {
-            // printf("Moving left!\n");
-            current = current->left;
-        }
-    }
-
-    return "Hi";
-}
-
-void HuffmanCodes()
+void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 {
+    printf("Starting generating codes...\n");
+
     int huffmanTree[MAX_TREE_SIZE], top = 0;
 
     // Create Huffman Tree
     struct MinHuffmanNode *root = buildHuffmanTree();
-
-    // printHuffmanTree(root, 0);
-    // treeprint(root, NULL, 't', 0);
 
     printf("Huffman Tree Created\n");
 
@@ -374,32 +304,76 @@ void HuffmanCodes()
 
     printf("Generated %d codes\n", currCount);
 
-    // Loop to print all codes
-    // for (int i = 0; i < currCount; i++)
-    // {
-    //     printf("%s: %lu = ", CharCodeTable[i].character, CharCodeTable[i].code);
-    //     printBinary(CharCodeTable[i].code, CharCodeTable[i].length);
-    // }
+    if (type == ENCODE)
+    {
+        printf("Encoding file %s\n", inputFilename);
+        encodeFile(inputFilename, outputFilename);
+    }
+    if (type == DECODE)
+    {
+        printf("Decoding file %s\n", inputFilename);
+        decodeFile(inputFilename, outputFilename, root);
+    }
 
-    char *stringToConvert = "THIS IS INSANEEEE"; // 1111100110 000 1110000
-
-    // 111001010 1000 01000 010
-
-    struct EncodeResult *result = encode(stringToConvert);
-
-    // printf("%s: ", stringToConvert);
-    // printBinary(result->encodedString, result->codeLength);
-
-    // char *decodedString = decode(result->encodedString, result->codeLength, root);
-    // char *decodedString = decode(010101111011100101100, 21, root);
-    // printf("Decoded: %s\n", decodedString);
-    printf("Decoded to %s\n", decodeFile("encodedString.txt", result->codeLength, root));
+    printf("\nDone!\n");
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    printf("Starting generating codes...\n");
-    HuffmanCodes();
-    printf("Done!\n");
+    int isEncoding = 0;
+    int isDecoding = 0;
+    char *inputFile;
+    char *outputFile;
+
+    int opt;
+    while ((opt = getopt(argc, argv, "edi:o:")) != -1)
+    {
+        switch (opt)
+        {
+        case 'e':
+        {
+            isEncoding = 1;
+            break;
+        }
+        case 'd':
+        {
+            isDecoding = 1;
+            break;
+        }
+        case 'i':
+        {
+            inputFile = malloc(sizeof(char) * strlen(optarg));
+            strcpy(inputFile, optarg);
+            break;
+        }
+        case 'o':
+        {
+            outputFile = malloc(sizeof(char) * strlen(optarg));
+            strcpy(outputFile, optarg);
+            break;
+        }
+        default:
+            fprintf(stderr, "Usage: %s [-ed] [file...]\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (isEncoding && isDecoding)
+    {
+        printf("Cannot encode and decode at the same time, please only use one flag -e or -d, with respective input and output files\n");
+    }
+    else if (isEncoding)
+    {
+        HuffmanCodes(ENCODE, inputFile, outputFile);
+    }
+    else if (isDecoding)
+    {
+        HuffmanCodes(DECODE, inputFile, outputFile);
+    }
+    else
+    {
+        printf("Please specify if you want encoding or decoding using -e and -d\n");
+    }
+
     return 0;
 }
