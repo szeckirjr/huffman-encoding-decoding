@@ -104,9 +104,10 @@ struct MinHuffman *createMinHuffman(unsigned long int capacity)
 
 struct MinHuffman *createAndBuildMinHuffman()
 {
+    int i;
     struct MinHuffman *minHuffman = createMinHuffman(ALPHABET_SIZE);
 
-    for (int i = 0; i < ALPHABET_SIZE; i++)
+    for (i = 0; i < ALPHABET_SIZE; i++)
     {
         minHuffman->array[i] = newHuffmanNode(alphabetFreq[i].character, alphabetFreq[i].frequency);
     }
@@ -159,7 +160,8 @@ CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int binaryCod
 
         unsigned long int code = 0;
         int codeLength = 0;
-        for (int i = 0; i < top; i++)
+        int i;
+        for (i = 0; i < top; i++)
         {
             code = code | arr[i];
             if (i < top - 1)
@@ -178,7 +180,8 @@ CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int binaryCod
 
 unsigned long int getCode(char character)
 {
-    for (int i = 0; i < currCount; i++)
+    int i;
+    for (i = 0; i < currCount; i++)
     {
         if (CharCodeTable[i].character[0] == character)
         {
@@ -190,7 +193,8 @@ unsigned long int getCode(char character)
 
 int getCodeLength(char character)
 {
-    for (int i = 0; i < currCount; i++)
+    int i;
+    for (i = 0; i < currCount; i++)
     {
         if (CharCodeTable[i].character[0] == character)
         {
