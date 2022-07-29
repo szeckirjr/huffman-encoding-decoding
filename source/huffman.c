@@ -219,7 +219,7 @@ struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
     fprintf(destFile, "");
     fclose(destFile);
     FILE *encodedFile = fopen(outputFilename, "a");
-    char c = fgetc(file);
+    int c = fgetc(file);
     unsigned long int encodedString = 0;
     int totalCodeLength = 0;
     while (c != EOF)
@@ -260,15 +260,15 @@ void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode
     fprintf(destFile, "");
     fclose(destFile);
     FILE *decodedFile = fopen(outputFilename, "a");
-    char c = fgetc(file);
+    int c = fgetc(file);
     struct MinHuffmanNode *current = root;
     while (c != EOF)
     {
-        if (c == '1')
+        if (c == 49)
         {
             current = current->right;
         }
-        if (c == '0')
+        if (c == 48)
         {
             current = current->left;
         }
