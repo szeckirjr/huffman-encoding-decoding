@@ -5,11 +5,10 @@
 
 void getAverageRunTime(enum mode type, char *inputFile, char *outputFile, char *timeFile) {
     
-    FILE *timeFilePtr = fopen(timeFile, "a");
     int i;
     double sum = 0;
 
-    for(i = 0; i < 100; i++) {
+    for(i = 0; i < 500; i++) {
         remove(outputFile);
         clock_t start_t, end_t;
         double total_t;
@@ -19,7 +18,8 @@ void getAverageRunTime(enum mode type, char *inputFile, char *outputFile, char *
         total_t = (double)(end_t - start_t) / CLOCKS_PER_SEC;
         sum = sum + total_t;
     }
-    fprintf(timeFilePtr, "%f", sum/100);
+    FILE *timeFilePtr = fopen(timeFile, "a");
+    fprintf(timeFilePtr, "%f", sum/500);
     fclose(timeFilePtr);
 }
 
@@ -27,8 +27,8 @@ int main() {
     char *inputFile = "rawText.txt";
     char *encodedFile = "encodedFile.txt";
     char *decodedFile = "decodedFile.txt";
-    char *encodedTimeFile = "encodedTimeFile.txt";
-    char *decodedTimeFile = "decodedTimeFile.txt";
+    char *encodedTimeFile = "encodedTime.txt";
+    char *decodedTimeFile = "decodedTime.txt";
     int i;
 
     getAverageRunTime(ENCODE, inputFile, encodedFile, encodedTimeFile);
