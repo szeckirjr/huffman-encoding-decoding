@@ -25,11 +25,10 @@ void getAverageRunTime(enum mode type, char *inputFile, char *outputFile, char *
 
 int main() {
     char *inputFile = "rawText.txt";
-    char *encodedFile = "encodedFile.txt";
-    char *decodedFile = "decodedFile.txt";
-    char *encodedTimeFile = "encodedTime.txt";
-    char *decodedTimeFile = "decodedTime.txt";
-    int i;
+    char *encodedFile = "clockCyclesOutput\\encodedFile.txt";
+    char *decodedFile = "clockCyclesOutput\\decodedFile.txt";
+    char *encodedTimeFile = "clockCyclesOutput\\encodedTime.txt";
+    char *decodedTimeFile = "clockCyclesOutput\\decodedTime.txt";
 
     getAverageRunTime(ENCODE, inputFile, encodedFile, encodedTimeFile);
     getAverageRunTime(DECODE, encodedFile, decodedFile, decodedTimeFile);
