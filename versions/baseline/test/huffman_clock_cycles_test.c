@@ -10,13 +10,13 @@ void getAverageRunTime(enum mode type, char *inputFile, char *outputFile, char *
 
     for(i = 0; i < 500; i++) {
         remove(outputFile);
-        clock_t start_t, end_t;
-        double total_t;
-        start_t = clock();
+        clock_t start, end;
+        double total_c_c;
+        start = clock();
         HuffmanCodes(type, inputFile, outputFile);
-        end_t = clock();
-        total_t = (double)(end_t - start_t) / CLOCKS_PER_SEC;
-        sum = sum + total_t;
+        end = clock();
+        total_c_c = (double)(end - start);
+        sum = sum + total_c_c;
     }
     FILE *timeFilePtr = fopen(timeFile, "a");
     fprintf(timeFilePtr, "%f", sum/500);
@@ -27,8 +27,8 @@ int main() {
     char *inputFile = "rawText.txt";
     char *encodedFile = "clockCyclesOutput\\encodedFile.txt";
     char *decodedFile = "clockCyclesOutput\\decodedFile.txt";
-    char *encodedTimeFile = "clockCyclesOutput\\encodedTime.txt";
-    char *decodedTimeFile = "clockCyclesOutput\\decodedTime.txt";
+    char *encodedTimeFile = "clockCyclesOutput\\averageEncodedClockCycles.txt";
+    char *decodedTimeFile = "clockCyclesOutput\\averageDecodedClockCycles.txt";
 
     getAverageRunTime(ENCODE, inputFile, encodedFile, encodedTimeFile);
     getAverageRunTime(DECODE, encodedFile, decodedFile, decodedTimeFile);
