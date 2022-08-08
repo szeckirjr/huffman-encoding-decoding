@@ -4,7 +4,7 @@
 typedef struct CharCode
 {
     char *character;
-    char *code;
+    unsigned long int code;
     int length;
 } CharCode_T;
 
@@ -30,11 +30,18 @@ struct MinHuffman
     struct MinHuffmanNode **array;
 };
 
-unsigned long int encode(char *rawString);
+struct EncodeResult *encode(char *rawString);
+
+enum mode {
+    ENCODE,
+    DECODE
+};
+
+void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename);
 
 // char *decode(char *binaryString, struct MinHeapNode *root);
 
 // Hold global variables for CharFreq table nad CharCode table
 CharFreq_T CharFreqTable[ALPHABET_SIZE];
 CharCode_T CharCodeTable[ALPHABET_SIZE];
-int currCount = 0;
+int currCount;
