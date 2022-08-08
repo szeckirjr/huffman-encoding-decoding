@@ -3,7 +3,7 @@
 
 
 int main() {
-    char *inputFile = "rawText.txt";
+    char *inputFile = "..\\..\\..\\input\\rawText.txt";
     char *encodedFile = "basicTestOutput\\encodedFile.txt";
     char *decodedFile = "basicTestOutput\\decodedFile.txt";
 
