@@ -32,7 +32,7 @@ int main() {
     char *encodedFile = "timeOutput\\encodedFile.txt";
     char *decodedFile = "timeOutput\\decodedFile.txt";
     char *encodedTimeFile = "timeOutput\\averageEncodedTime.txt";
-    char *decodedTimeFile = "timeOutput\\averageDencodedTime.txt";
+    char *decodedTimeFile = "timeOutput\\averageDecodedTime.txt";
 
     getAverageRunTime(ENCODE, inputFile, encodedFile, encodedTimeFile);
     getAverageRunTime(DECODE, encodedFile, decodedFile, decodedTimeFile);
