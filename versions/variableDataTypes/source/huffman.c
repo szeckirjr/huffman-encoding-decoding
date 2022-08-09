@@ -751,7 +751,7 @@ struct EncodeResult
     char *rawString;
 };
 
-struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict outputFilename)
+struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
 {
 
     FILE *file = fopen(inputFilename, "r");
@@ -793,7 +793,7 @@ struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict out
     return result;
 }
 
-void decodeFile(char *restrict inputFilename, char *restrict outputFilename, struct MinHuffmanNode *root)
+void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode *root)
 {
     FILE *file = fopen(inputFilename, "r");
     FILE *destFile = fopen(outputFilename, "w");
@@ -827,7 +827,7 @@ void decodeFile(char *restrict inputFilename, char *restrict outputFilename, str
     fclose(file);
 }
 
-void HuffmanCodes(enum mode type, char *restrict inputFilename, char *restrict outputFilename)
+void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 {
     printf("Starting generating codes...\n");
 
