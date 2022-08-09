@@ -1,2 +1,0 @@
-Average Clock Cycles: 1.050000
-Average Time: 0.001050
