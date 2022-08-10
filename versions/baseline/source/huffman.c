@@ -312,8 +312,11 @@ struct EncodeResult
     char *rawString;
 };
 
-struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
+struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode *root)
 {
+    int huffmanTree[MAX_TREE_SIZE], top = 0;
+    buildCodeTable(root, huffmanTree, 0, 0);
+    printf("Generated %d codes\n", currCount);
 
     FILE *file = fopen(inputFilename, "r");
     FILE *destFile = fopen(outputFilename, "w");
@@ -392,21 +395,15 @@ void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 {
     printf("Starting generating codes...\n");
 
-    int huffmanTree[MAX_TREE_SIZE], top = 0;
-
     // Create Huffman Tree
     struct MinHuffmanNode *root = buildHuffmanTree();
 
     printf("Huffman Tree Created\n");
 
-    buildCodeTable(root, huffmanTree, 0, 0);
-
-    printf("Generated %d codes\n", currCount);
-
     if (type == ENCODE)
     {
         printf("Encoding file %s\n", inputFilename);
-        encodeFile(inputFilename, outputFilename);
+        encodeFile(inputFilename, outputFilename, root);
     }
     if (type == DECODE)
     {
