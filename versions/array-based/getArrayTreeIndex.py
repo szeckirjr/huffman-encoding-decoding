@@ -100,17 +100,14 @@ codeDict = {
 treeCodes = ['T']*119237951
 print(len(treeCodes))
 
-for key in codeDict:
-    #print(key)
-    i = 0
-    for element in codeDict[key]:
-        if (element == '1'):
-            i = 2*i + 2
-        if (element == '0'):
-            i = 2*i + 1
-    treeCodes[i] = key
-
 with open('huffmanTreeValues.txt', 'w') as f:
-    for item in treeCodes:
-        f.write(item)
+    for key in codeDict:
+        #print(key)
+        i = 0
+        for element in codeDict[key]:
+            if (element == '1'):
+                i = 2*i + 2
+            if (element == '0'):
+                i = 2*i + 1
+        f.write("[{}] = '{}',\n".format(i, key))
 f.close()

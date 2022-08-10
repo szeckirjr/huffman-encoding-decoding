@@ -8,7 +8,7 @@ int main() {
     char *decodedFile = "basicTestOutput\\decodedFile.txt";
 
     HuffmanCodes(ENCODE, inputFile, encodedFile);
-    HuffmanCodes(DECODE, encodedFile, decodedFile);    
+    //HuffmanCodes(DECODE, encodedFile, decodedFile);    
 
     return 0;
 }
