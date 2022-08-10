@@ -1,4 +1,4 @@
-#define ALPHABET_SIZE 134
+#define ALPHABET_SIZE 97
 
 typedef struct CharFreq
 {

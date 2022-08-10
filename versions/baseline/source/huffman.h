@@ -1,5 +1,5 @@
 #include "frequency.h"
-#define MAX_TREE_SIZE 2000
+#define MAX_TREE_SIZE 100
 
 typedef struct CharCode
 {
