@@ -17,11 +17,9 @@ import pandas as pd
 # Brazilian portuguese alphabet
 alphabet_lower = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 alphabet_upper = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-alphabet_symbols = [' ', '\n', ',', '.', '!', '?', ';', ':', '"', '\'', '`', '´', '-', '_', '=', '+', '*', '%', '#', '$', '@', '&', '^', '~', '|', '\\', '<', '>', '/', '{', '}', '[', ']', '(', ')', 'ª', 'º']
+alphabet_symbols = [' ', '\n', ',', '.', '!', '?', ';', ':', '"', '\'', '`', '-', '_', '=', '+', '*', '%', '#', '$', '@', '&', '^', '~', '|', '\\', '<', '>', '/', '{', '}', '[', ']', '(', ')']
 alphabet_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-alphabet_accents = ['à', 'á', 'â', 'ã', 'ç', 'è', 'é', 'ê', 'ì', 'í', 'î', 'ò', 'ó', 'ô', 'õ', 'ù', 'ú']
-alphabet_accents_upper = ['À', 'Á', 'Â', 'Ã', 'Ç', 'È', 'É', 'Ê', 'Ì', 'Í', 'Î', 'Ò', 'Ó', 'Ô', 'Õ', 'Ù', 'Ú', 'Û']
-full_alphabet = list(itertools.chain(alphabet_lower, alphabet_upper, alphabet_symbols, alphabet_numbers, alphabet_accents, alphabet_accents_upper))
+full_alphabet = list(itertools.chain(alphabet_lower, alphabet_upper, alphabet_symbols, alphabet_numbers))
 
 """CharFreq* alphabetFreq = {
     {
@@ -66,7 +64,7 @@ def main(input, output):
     df = df.merge(df_count, how='outer') # merge with full alphabet
     df['count'] = df['count'].fillna(0)
     df['total'] = df['count'].sum()
-    df['frequency'] = df['count']/df['total']
+    df['frequency'] = df['count']
     df['frequency'] = df['frequency'].apply(lambda x: '%.10f' % x)
 
     write_to_header_file(df, output)  
