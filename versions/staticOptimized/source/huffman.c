@@ -264,10 +264,7 @@ void buildMinHuffman(struct MinHuffman *minHuffman)
 {
     int n = minHuffman->size - 1;
     int i;
-
-    // optimization: operater strength reduction (changing i to use bit shifting instead of division)
-    // optimization: change exit condition to i != 0
-    for (i = (n - 1) >> 1; i != 0; --i)
+    for (i = (n - 1) / 2; i >= 0; --i)
     {
         minHeapify(minHuffman, i);
     }
@@ -289,10 +286,9 @@ void insertMinHuffman(struct MinHuffman *minHuffman, struct MinHuffmanNode *minH
     ++minHuffman->size;
     int i = minHuffman->size - 1;
 
-    // optimization: operator strength reduction (change array index to use bit shifting instead of division)
-    while (i && minHuffmanNode->freq < minHuffman->array[(i - 1) >> 1]->freq)
+    while (i && minHuffmanNode->freq < minHuffman->array[(i - 1) / 2]->freq)
     {
-        minHuffman->array[i] = minHuffman->array[(i - 1) >> 1];
+        minHuffman->array[i] = minHuffman->array[(i - 1) / 2];
         i = (i - 1) / 2;
     }
 
@@ -313,11 +309,9 @@ struct MinHuffman *createAndBuildMinHuffman()
     int i;
     struct MinHuffman *minHuffman = createMinHuffman(ALPHABET_SIZE);
 
-    // optimization: loop unrolling
-    for (i = 0; i < ALPHABET_SIZE-1; i+=2)
+    for (i = 0; i < ALPHABET_SIZE; i++)
     {
         minHuffman->array[i] = newHuffmanNode(alphabetFreq[i].character, alphabetFreq[i].frequency);
-        minHuffman->array[i+1] = newHuffmanNode(alphabetFreq[i+1].character, alphabetFreq[i+1].frequency);
     }
     minHuffman->size = ALPHABET_SIZE;
     buildMinHuffman(minHuffman);
@@ -361,8 +355,7 @@ struct EncodeResult
     char *rawString;
 };
 
-// optimization: restrict pointers, variable data types
-struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict outputFilename)
+struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
 {
 
     FILE *file = fopen(inputFilename, "r");
@@ -370,13 +363,13 @@ struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict out
     fprintf(destFile, "");
     fclose(destFile);
     FILE *encodedFile = fopen(outputFilename, "a");
-    register int c = fgetc(file);
-    register unsigned long int encodedString = 0;
-    register int totalCodeLength = 0;
+    int c = fgetc(file);
+    unsigned long int encodedString = 0;
+    int totalCodeLength = 0;
     while (c != EOF)
     {
-        register unsigned long int code = getCode(c);
-        register int codeLength = getCodeLength(c);
+        unsigned long int code = getCode(c);
+        int codeLength = getCodeLength(c);
 
         if (code == -1)
         {
@@ -404,15 +397,14 @@ struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict out
     return result;
 }
 
-// optimization: restrict pointers, variable data types
-void decodeFile(char *restrict inputFilename, char *restrict outputFilename, struct MinHuffmanNode *restrict root)
+void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode *root)
 {
     FILE *file = fopen(inputFilename, "r");
     FILE *destFile = fopen(outputFilename, "w");
     fprintf(destFile, "");
     fclose(destFile);
     FILE *decodedFile = fopen(outputFilename, "a");
-    register int c = fgetc(file);
+    int c = fgetc(file);
     struct MinHuffmanNode *current = root;
     while (c != EOF)
     {
@@ -439,8 +431,7 @@ void decodeFile(char *restrict inputFilename, char *restrict outputFilename, str
     fclose(file);
 }
 
-// optimization: restrict pointers
-void HuffmanCodes(enum mode type, char *restrict inputFilename, char *restrict outputFilename)
+void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 {
     printf("Starting generating codes...\n");
 
