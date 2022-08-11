@@ -5,11 +5,12 @@
 #include "huffman.h"
 #include <math.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #define PARENT(i) ((i - 1) / 2)
 
-// Look up table with index as each character's ascii code and their respective binary encoding
-lookUpItem lookUpTable[] = {
+// Look up table of size 251 for each character's ascii code and binary encoding
+lookUpItem lookUpTable[127] = {
     [10] = C10,
     [32] = C32,
     [33] = C33,
@@ -421,7 +422,7 @@ void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode
             fprintf(decodedFile, "%s", current->data);
             current = root;
         }
-        if (c != '1' && c != '0')
+        if (c != 49 && c != 48)
         {
             printf("%c is not an accepted format for decoding, so it was ignored\n", c);
         }
@@ -432,6 +433,15 @@ void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode
 
 void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 {
+    printf("Starting generating codes...\n");
+
+    int huffmanTree[MAX_TREE_SIZE], top = 0;
+
+    // Create Huffman Tree
+    struct MinHuffmanNode *root = buildHuffmanTree();
+
+    printf("Huffman Tree Created\n");
+
     printf("Using static look up table\n");
 
     if (type == ENCODE)
@@ -442,9 +452,6 @@ void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
     if (type == DECODE)
     {
         printf("Decoding file %s\n", inputFilename);
-        // Create Huffman Tree
-        struct MinHuffmanNode *root = buildHuffmanTree();
-        printf("Huffman Tree Created\n");
         decodeFile(inputFilename, outputFilename, root);
     }
 

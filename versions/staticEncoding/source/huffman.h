@@ -1,4 +1,5 @@
 #include "frequency.h"
+#include <stdint.h>
 #define MAX_TREE_SIZE 2000
 
 typedef struct

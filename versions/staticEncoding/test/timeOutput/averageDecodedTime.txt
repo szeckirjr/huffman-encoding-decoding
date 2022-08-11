@@ -1,0 +1,2 @@
+Average Clock Ticks: 10340.000000
+Average Time: 0.010340
