@@ -5,8 +5,109 @@
 #include "huffman.h"
 #include <math.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #define PARENT(i) ((i - 1) / 2)
+
+// Look up table of size 251 for each character's ascii code and binary encoding
+lookUpItem lookUpTable[127] = {
+    [10] = C10,
+    [32] = C32,
+    [33] = C33,
+    [34] = C34,
+    [35] = C35,
+    [36] = C36,
+    [37] = C37,
+    [38] = C38,
+    [39] = C39,
+    [40] = C40,
+    [41] = C41,
+    [42] = C42,
+    [43] = C43,
+    [44] = C44,
+    [45] = C45,
+    [46] = C46,
+    [47] = C47,
+    [48] = C48,
+    [49] = C49,
+    [50] = C50,
+    [51] = C51,
+    [52] = C52,
+    [53] = C53,
+    [54] = C54,
+    [55] = C55,
+    [56] = C56,
+    [57] = C57,
+    [58] = C58,
+    [59] = C59,
+    [60] = C60,
+    [61] = C61,
+    [62] = C62,
+    [63] = C63,
+    [64] = C64,
+    [65] = C65,
+    [66] = C66,
+    [67] = C67,
+    [68] = C68,
+    [69] = C69,
+    [70] = C70,
+    [71] = C71,
+    [72] = C72,
+    [73] = C73,
+    [74] = C74,
+    [75] = C75,
+    [76] = C76,
+    [77] = C77,
+    [78] = C78,
+    [79] = C79,
+    [80] = C80,
+    [81] = C81,
+    [82] = C82,
+    [83] = C83,
+    [84] = C84,
+    [85] = C85,
+    [86] = C86,
+    [87] = C87,
+    [88] = C88,
+    [89] = C89,
+    [90] = C90,
+    [91] = C91,
+    [92] = C92,
+    [93] = C93,
+    [94] = C94,
+    [95] = C95,
+    [96] = C96,
+    [97] = C97,
+    [98] = C98,
+    [99] = C99,
+    [100] = C100,
+    [101] = C101,
+    [102] = C102,
+    [103] = C103,
+    [104] = C104,
+    [105] = C105,
+    [106] = C106,
+    [107] = C107,
+    [108] = C108,
+    [109] = C109,
+    [110] = C110,
+    [111] = C111,
+    [112] = C112,
+    [113] = C113,
+    [114] = C114,
+    [115] = C115,
+    [116] = C116,
+    [117] = C117,
+    [118] = C118,
+    [119] = C119,
+    [120] = C120,
+    [121] = C121,
+    [122] = C122,
+    [123] = C123,
+    [124] = C124,
+    [125] = C125,
+    [126] = C126,
+};
 
 int currCount = 0;
 CharFreq_T alphabetFreq[ALPHABET_SIZE] = {
@@ -163,7 +264,10 @@ void buildMinHuffman(struct MinHuffman *minHuffman)
 {
     int n = minHuffman->size - 1;
     int i;
-    for (i = (n - 1) / 2; i >= 0; --i)
+
+    // optimization: operater strength reduction (changing i to use bit shifting instead of division)
+    // optimization: change exit condition to i != 0
+    for (i = (n - 1) >> 1; i != 0; --i)
     {
         minHeapify(minHuffman, i);
     }
@@ -185,9 +289,10 @@ void insertMinHuffman(struct MinHuffman *minHuffman, struct MinHuffmanNode *minH
     ++minHuffman->size;
     int i = minHuffman->size - 1;
 
-    while (i && minHuffmanNode->freq < minHuffman->array[(i - 1) / 2]->freq)
+    // optimization: operator strength reduction (change array index to use bit shifting instead of division)
+    while (i && minHuffmanNode->freq < minHuffman->array[(i - 1) >> 1]->freq)
     {
-        minHuffman->array[i] = minHuffman->array[(i - 1) / 2];
+        minHuffman->array[i] = minHuffman->array[(i - 1) >> 1];
         i = (i - 1) / 2;
     }
 
@@ -208,9 +313,11 @@ struct MinHuffman *createAndBuildMinHuffman()
     int i;
     struct MinHuffman *minHuffman = createMinHuffman(ALPHABET_SIZE);
 
-    for (i = 0; i < ALPHABET_SIZE; i++)
+    // optimization: loop unrolling
+    for (i = 0; i < ALPHABET_SIZE-1; i+=2)
     {
         minHuffman->array[i] = newHuffmanNode(alphabetFreq[i].character, alphabetFreq[i].frequency);
+        minHuffman->array[i+1] = newHuffmanNode(alphabetFreq[i+1].character, alphabetFreq[i+1].frequency);
     }
     minHuffman->size = ALPHABET_SIZE;
     buildMinHuffman(minHuffman);
@@ -237,72 +344,14 @@ struct MinHuffmanNode *buildHuffmanTree()
     return extractMin(minHuffman);
 };
 
-CharCode_T *buildCodeTable(struct MinHuffmanNode *root, int arr[], int binaryCode, int top)
+uint32_t getCode(char character)
 {
-    if (root->right)
-    {
-        binaryCode = binaryCode | 1;
-        binaryCode <<= 1;
-        arr[top] = 1;
-        buildCodeTable(root->right, arr, binaryCode, top + 1);
-    }
-    if (root->left)
-    {
-        binaryCode = binaryCode << 1;
-        arr[top] = 0;
-        buildCodeTable(root->left, arr, binaryCode, top + 1);
-    }
-
-    if (!(root->left) && !(root->right))
-    {
-        int charLength = strlen(root->data);
-        CharCodeTable[currCount].character = malloc(sizeof(char) * charLength);
-        strcpy(CharCodeTable[currCount].character, root->data);
-
-        unsigned long int code = 0;
-        int codeLength = 0;
-        int i;
-        for (i = 0; i < top; i++)
-        {
-            code = code | arr[i];
-            if (i < top - 1)
-            {
-                code = code << 1;
-            }
-            codeLength++;
-        }
-
-        CharCodeTable[currCount].code = code;
-        CharCodeTable[currCount].length = codeLength;
-        currCount++;
-    }
-    return CharCodeTable;
+    return lookUpTable[character].code;
 }
 
-unsigned long int getCode(char character)
+uint8_t getCodeLength(char character)
 {
-    int i;
-    for (i = 0; i < currCount; i++)
-    {
-        if (CharCodeTable[i].character[0] == character)
-        {
-            return CharCodeTable[i].code;
-        }
-    }
-    return -1;
-}
-
-int getCodeLength(char character)
-{
-    int i;
-    for (i = 0; i < currCount; i++)
-    {
-        if (CharCodeTable[i].character[0] == character)
-        {
-            return CharCodeTable[i].length;
-        }
-    }
-    return -1;
+    return lookUpTable[character].len;
 }
 
 struct EncodeResult
@@ -312,7 +361,8 @@ struct EncodeResult
     char *rawString;
 };
 
-struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
+// optimization: restrict pointers, variable data types
+struct EncodeResult *encodeFile(char *restrict inputFilename, char *restrict outputFilename)
 {
 
     FILE *file = fopen(inputFilename, "r");
@@ -320,13 +370,13 @@ struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
     fprintf(destFile, "");
     fclose(destFile);
     FILE *encodedFile = fopen(outputFilename, "a");
-    int c = fgetc(file);
-    unsigned long int encodedString = 0;
-    int totalCodeLength = 0;
+    register int c = fgetc(file);
+    register unsigned long int encodedString = 0;
+    register int totalCodeLength = 0;
     while (c != EOF)
     {
-        unsigned long int code = getCode(c);
-        int codeLength = getCodeLength(c);
+        register unsigned long int code = getCode(c);
+        register int codeLength = getCodeLength(c);
 
         if (code == -1)
         {
@@ -354,14 +404,15 @@ struct EncodeResult *encodeFile(char *inputFilename, char *outputFilename)
     return result;
 }
 
-void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode *root)
+// optimization: restrict pointers, variable data types
+void decodeFile(char *restrict inputFilename, char *restrict outputFilename, struct MinHuffmanNode *restrict root)
 {
     FILE *file = fopen(inputFilename, "r");
     FILE *destFile = fopen(outputFilename, "w");
     fprintf(destFile, "");
     fclose(destFile);
     FILE *decodedFile = fopen(outputFilename, "a");
-    int c = fgetc(file);
+    register int c = fgetc(file);
     struct MinHuffmanNode *current = root;
     while (c != EOF)
     {
@@ -375,11 +426,11 @@ void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode
         }
         if (!(current->left) && !(current->right))
         {
-            //printf("%s", current->data);
+            // printf("%s", current->data);
             fprintf(decodedFile, "%s", current->data);
             current = root;
         }
-        if (c != '1' && c != '0')
+        if (c != 49 && c != 48)
         {
             printf("%c is not an accepted format for decoding, so it was ignored\n", c);
         }
@@ -388,7 +439,8 @@ void decodeFile(char *inputFilename, char *outputFilename, struct MinHuffmanNode
     fclose(file);
 }
 
-void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
+// optimization: restrict pointers
+void HuffmanCodes(enum mode type, char *restrict inputFilename, char *restrict outputFilename)
 {
     printf("Starting generating codes...\n");
 
@@ -399,9 +451,7 @@ void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
 
     printf("Huffman Tree Created\n");
 
-    buildCodeTable(root, huffmanTree, 0, 0);
-
-    printf("Generated %d codes\n", currCount);
+    printf("Using static look up table\n");
 
     if (type == ENCODE)
     {
@@ -417,63 +467,3 @@ void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
     printf("\nDone!\n");
     currCount = 0;
 }
-
-/*int main(int argc, char *argv[])
-{
-    int isEncoding = 0;
-    int isDecoding = 0;
-    char *inputFile;
-    char *outputFile;
-
-    int opt;
-    while ((opt = getopt(argc, argv, "edi:o:")) != -1)
-    {
-        switch (opt)
-        {
-        case 'e':
-        {
-            isEncoding = 1;
-            break;
-        }
-        case 'd':
-        {
-            isDecoding = 1;
-            break;
-        }
-        case 'i':
-        {
-            inputFile = malloc(sizeof(char) * strlen(optarg));
-            strcpy(inputFile, optarg);
-            break;
-        }
-        case 'o':
-        {
-            outputFile = malloc(sizeof(char) * strlen(optarg));
-            strcpy(outputFile, optarg);
-            break;
-        }
-        default:
-            fprintf(stderr, "Usage: %s [-ed] [file...]\n", argv[0]);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    if (isEncoding && isDecoding)
-    {
-        printf("Cannot encode and decode at the same time, please only use one flag -e or -d, with respective input and output files\n");
-    }
-    else if (isEncoding)
-    {
-        HuffmanCodes(ENCODE, inputFile, outputFile);
-    }
-    else if (isDecoding)
-    {
-        HuffmanCodes(DECODE, inputFile, outputFile);
-    }
-    else
-    {
-        printf("Please specify if you want encoding or decoding using -e and -d\n");
-    }
-
-    return 0;
-}*/

@@ -9,6 +9,12 @@ typedef struct CharCode
     int length;
 } CharCode_T;
 
+typedef struct HuffmanTreeT
+{
+    unsigned long int index;
+    char *character;
+} HuffmanTree_T;
+
 // A Huffman tree node
 struct MinHuffmanNode
 {

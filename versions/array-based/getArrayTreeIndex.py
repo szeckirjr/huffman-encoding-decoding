@@ -97,9 +97,6 @@ codeDict = {
     "9": "100001110011",
 }
 
-treeCodes = ['T']*119237951
-print(len(treeCodes))
-
 with open('huffmanTreeValues.txt', 'w') as f:
     for key in codeDict:
         #print(key)
@@ -109,5 +106,5 @@ with open('huffmanTreeValues.txt', 'w') as f:
                 i = 2*i + 2
             if (element == '0'):
                 i = 2*i + 1
-        f.write("[{}] = '{}',\n".format(i, key))
+        f.write("{ " + str(i) + ", \"" + key +"\", } ,\n")
 f.close()

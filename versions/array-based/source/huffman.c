@@ -479,15 +479,33 @@ void decodeFile(char *inputFilename, char *outputFilename, char *HTArray)
             printf("Found character : %c!!!!\n", HTArray[index]);
             index = 0;
         }
-        if (c != 49 && c != 48)
+        if (index == MAX_ARRAY_TREE_SIZE)
         {
             printf("%c is not an accepted format for decoding, so it was ignored\n", c);
-        }
-        if (index >= MAX_ARRAY_TREE_SIZE) {
-            printf("Reached end of array and did not find character\n");
             index = 0;
         }
         c = fgetc(file);
+    }
+    fclose(file);
+}
+
+void createHuffmanArray()
+{
+    FILE *file = fopen("../huffmanTreeValues.txt", "r");
+    int i = 0;
+    int c = fgetc(file);
+     
+    while (c != EOF)
+    {
+        if (c == 84) {
+            huffmanTreeArray[i] = '\0';
+        }
+        else {
+            huffmanTreeArray[i] = (char)c;
+        }
+        
+        c = fgetc(file);
+        i++;
     }
     fclose(file);
 }
@@ -502,6 +520,8 @@ void HuffmanCodes(enum mode type, char *inputFilename, char *outputFilename)
     // Create Huffman Tree
     struct MinHuffmanNode *root = buildHuffmanTree();
 
+    // Create Huffman Tree Array
+    createHuffmanArray();
 
     printf("Huffman Tree Created\n");
 

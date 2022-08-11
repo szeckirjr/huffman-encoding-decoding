@@ -1,5 +1,14 @@
 #include "frequency.h"
+#include <stdint.h>
 #define MAX_TREE_SIZE 2000
+
+typedef struct
+{
+    uint32_t code;
+    uint8_t len;
+    uint8_t ascii;
+    char string[3];
+} lookUpItem;
 
 typedef struct CharCode
 {
@@ -32,7 +41,8 @@ struct MinHuffman
 
 struct EncodeResult *encode(char *rawString);
 
-enum mode {
+enum mode
+{
     ENCODE,
     DECODE
 };
